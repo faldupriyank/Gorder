@@ -80,11 +80,16 @@ class Graph{
 
 		void GapCount();
 		double GapCost(vector<int>& order);
-		void Transform();
+		void Transform(vector<int>& rcm_order);
+		void PrintTwoDirectionMap(const vector<int>& rcm_order, const vector<int>& gorder);
 		void GorderGreedy(vector<int>& order, int window);
 
 		void RCMOrder(vector<int>& order);
 		unsigned long long LocalityScore(const int w);
+
+        static bool terminate_after_map;
+        static bool indegree_gorder;
+        static string getDegree(bool);
 };
 
 }

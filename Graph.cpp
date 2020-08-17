@@ -23,6 +23,15 @@ THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR IMPLI
 namespace Gorder
 {
 
+string Graph::getDegree(bool deg) {
+    return (deg ? "indegree" : "outdegree");
+}
+
+bool Graph::indegree_gorder=1; // reordering based on indegree if 1, outdegree if 0
+
+bool Graph::terminate_after_map = false; // terminate application after reordering mapping is computed
+
+
 string Graph::getFilename(){
 	return name;
 }
@@ -65,6 +74,7 @@ void Graph::readGraph(const string& fullname) {
 	vector< pair<int, int> > edges;
 	edges.reserve(100000000);
 
+#if 0
 	while(feof(fp)!=true){
 		if(fgets(line, 40, fp)){
 			u=v=0;
@@ -86,6 +96,30 @@ void Graph::readGraph(const string& fullname) {
 			edges.push_back(make_pair(u, v));
 		}
 	}
+#else
+    ifstream ifs(fullname.c_str(), std::ifstream::in);
+    while (ifs.good()) {
+        u=v=0;
+        ifs >> u >> v;
+        if(u==v)
+            continue;
+        edgenum++;
+        if(u>vsize)
+            vsize=u;
+        if(v>vsize)
+            vsize=v;
+
+        if ( Graph::indegree_gorder ) {
+            edges.push_back(make_pair(u, v));
+        } else {
+            edges.push_back(make_pair(v, u));
+        }
+    }
+    if (edges[edgenum-1].first == 0 && edges[edgenum-1].second == 0) {
+        edgenum--;
+        edges.pop_back();
+    }
+#endif
 	vsize++;
 
 	fclose(fp);
@@ -141,8 +175,7 @@ void Graph::readGraph(const string& fullname) {
 	graph[vsize].instart=edgenum;
 }
 
-void Graph::Transform(){
-	vector<int> order;
+void Graph::Transform(vector<int>& order){
 	RCMOrder(order);
 	if(order.size()!=vsize){
 		cout << "order.size()!=vsize" << endl;
@@ -224,6 +257,27 @@ void Graph::writeGraph(ostream& out){
 	}
 }
 
+
+void Graph::PrintTwoDirectionMap(const vector<int>& rcm_order, const vector<int>& gorder_order) {
+    string degree_type = Graph::getDegree(Graph::indegree_gorder);
+    string f_map = name+"_gorder_"+degree_type+".map";
+
+    if ( rcm_order.size() != gorder_order.size() ) {
+        cout << "Map size does not match: " << rcm_order.size() << gorder_order.size() << endl;
+        quit();
+    }
+    cout << "Writing file: " << f_map << endl;
+    ofstream out_map(f_map.c_str());
+    out_map << vsize << endl;
+    out_map << edgenum << endl;
+    for (int i = 0; i < gorder_order.size() ; i++ ) {
+        out_map << i << "\t" << gorder_order[rcm_order[i]] << endl;
+    }
+    if (terminate_after_map) {
+        cout << "Exiting early as instructed!" << endl;
+        exit(0);
+    }
+}
 
 void Graph::PrintReOrderedGraph(const vector<int>& order){
 	ofstream out((name+"_Gorder.txt").c_str());

@@ -45,6 +45,16 @@ int main(int argc, char* argv[]){
 			}
 			i++;
 		}
+        else if(strcmp("-e", argv[i])==0) {
+            Graph::terminate_after_map = true;
+            i++;
+        }
+        else if(strcmp("-d", argv[i])==0) {
+            i++;
+            Graph::indegree_gorder=atoi(argv[i]);
+            cout << Graph::indegree_gorder << endl;
+            i++;
+        }
 		else{
 			filename=argv[i++];
 		}
@@ -59,7 +69,8 @@ int main(int argc, char* argv[]){
 
 	start=clock();
 	g.readGraph(filename);
-	g.Transform();
+    vector<int> rcm_order;
+	g.Transform(rcm_order);
 	cout << name << " readGraph is complete." << endl;
 	end=clock();
 	cout << "Time Cost: " << (double)(end-start)/CLOCKS_PER_SEC << endl;
@@ -70,7 +81,11 @@ int main(int argc, char* argv[]){
 	end=clock();
 	cout << "ReOrdered Time Cost: " << (double)(end-start)/CLOCKS_PER_SEC << endl;
 	cout << "Begin Output the Reordered Graph" << endl;
+#if 1
+    g.PrintTwoDirectionMap(rcm_order, order);
+#else
 	g.PrintReOrderedGraph(order);
+#endif
 	cout << endl;
 }
 
